@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <string.h>
 #include <ctype.h>
 
@@ -58,6 +59,7 @@ int main(int argc, char** argv) {
     } while (0)
     char* cmd = argv[2];
     int retval = 0;
+    bool verbose = false;
     uint8_t color[3] = {255, 255, 255};
     while (1) {
         nextcmd:;
@@ -67,12 +69,12 @@ int main(int argc, char** argv) {
         --cmdnamelen;
         #define SKIPTOARGS() do {cmd += cmdnamelen; while (*cmd == ' ') ++cmd;} while(0)
         #define PARSEINT(PARSEINT_out) do {\
-            char PARSEINT_n;\
+            bool PARSEINT_n;\
             if (*cmd == '-') {\
-                PARSEINT_n = 1;\
+                PARSEINT_n = true;\
                 ++cmd;\
             } else {\
-                PARSEINT_n = 0;\
+                PARSEINT_n = false;\
             }\
             PARSEINT_out = 0;\
             while (*cmd >= '0' && *cmd <= '9') {\
@@ -122,6 +124,7 @@ int main(int argc, char** argv) {
             case 'i':
                 if (!cmdnamelen || (cmdnamelen == 3 && !strncmp(cmd, "nfo", 3))) {
                     SKIPTOARGS();
+                    ENDARGS();
                     printf(
                         "INFO:\n"
                         "  ID: %s\n"
@@ -153,7 +156,6 @@ int main(int argc, char** argv) {
                         (unsigned)varinfo.blue.offset, (unsigned)varinfo.blue.length, (varinfo.blue.msb_right) ? "true" : "false",
                         (unsigned)varinfo.transp.offset, (unsigned)varinfo.transp.length, (varinfo.transp.msb_right) ? "true" : "false"
                     );
-                    ENDARGS();
                     goto nextcmd;
                 }
                 break;
@@ -200,8 +202,8 @@ int main(int argc, char** argv) {
                             break;
                         }
                     }
-                    printf("SET COLOR TO #%02X%02X%02X\n", color[0], color[1], color[2]);
                     ENDARGS();
+                    if (verbose) printf("SET COLOR: #%02X%02X%02X\n", color[0], color[1], color[2]);
                     goto nextcmd;
                 }
                 break;
@@ -214,7 +216,7 @@ int main(int argc, char** argv) {
                     PARSEINT(y);
                     ENDARGS();
                     PUTPIX(x, y, color[0], color[1], color[2]);
-                    printf("SET PIXEL(%d, %d)\n", x, y);
+                    if (verbose) printf("SET PIXEL: %d, %d\n", x, y);
                     goto nextcmd;
                 }
                 break;
@@ -247,7 +249,15 @@ int main(int argc, char** argv) {
                             PUTPIX(x, y, color[0], color[1], color[2]);
                         }
                     }
-                    printf("DREW QUAD(%d, %d, %d, %d)\n", x1, y1, x2 - x1, y2 - y1);
+                    if (verbose) printf("DREW QUAD: %d, %d, %d, %d)\n", x1, y1, x2 - x1, y2 - y1);
+                    goto nextcmd;
+                }
+                break;
+            case 'V':
+                if (!cmdnamelen || (cmdnamelen == 6 && !strncmp(cmd, "erbose", 6))) {
+                    SKIPTOARGS();
+                    ENDARGS();
+                    verbose = !verbose;
                     goto nextcmd;
                 }
                 break;
