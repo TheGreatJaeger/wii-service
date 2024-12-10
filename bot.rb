@@ -13,7 +13,12 @@ bot.message(starting_with: 'wii$') do |event|
     arg = parts[1]
 
     if command == 'help'
-      event.respond "`wii$help`- Run this help dialog\n`wii$neofetch`- Run neofetch and return the results\nwii$uname- Runs uname and sends the results\n`wii$say`- Send a message and display it on Jaeger\'s monitors"
+      help = "`wii$help`- Run this help dialog\n"
+      help += "`wii$neofetch`- Run neofetch and return the results\n"
+      help += "`wii$uname` - Runs uname and sends the results\n"
+      help += "`wii$say`- Send a message and display it on Jaeger\'s monitors\n"
+      help += "`wii$draw`- Draw some graphics on Jaeger\'s monitors"
+      event.respond help
     elsif command == 'say'
       print event.user.name,": ", arg, "\n"
       event.respond "Message sent!"
