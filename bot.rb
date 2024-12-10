@@ -19,7 +19,9 @@ bot.message(starting_with: 'wii$') do |event|
       event.respond "Message sent!"
     elsif command == 'draw'
       arg = arg.gsub("'", "'\\''")
-      event.respond `./fbdraw /dev/fb0 '#{arg}' 2>&1`
+      fbdraw = `./fbdraw /dev/fb0 '#{arg}' 2>&1`
+      fbdraw = fbdraw.gsub("`", "\u200b`")
+      event.respond "```ansi\n" + fbdraw + "\n```" 
     elsif command == 'uname'
       uname = `uname -a`
       event.respond uname
