@@ -184,7 +184,7 @@ int main(int argc, char** argv) {
                         "  ID: %s\n"
                         "  Type: %u (%u)\n"
                         "  Line length: %u\n"
-                        "  Capabilities: %04x\n"
+                        "  Capabilities: 0x%04x\n"
                         "  Visible resolution: %ux%u\n"
                         "  Virtual resolution: %ux%u\n"
                         "  Offset: %u, %u\n"
