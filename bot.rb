@@ -37,7 +37,7 @@ bot.message(starting_with: 'wii$') do |event|
       neofetch = neofetch.gsub("`", "\u200b`")
       event.respond("```ansi\n" + neofetch + "\n```")
     elsif command == 'clear'
-      print - "[H[2J[3J"
+      print "\x1b[H\x1b[2J\x1b[3J"
       event.respond('Screen cleared!!')
     else
       event.respond("Unknown command: #{command}")
