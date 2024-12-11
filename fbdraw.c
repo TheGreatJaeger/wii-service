@@ -13,11 +13,11 @@
 #include <string.h>
 #include <ctype.h>
 
-#define VERSTR "1.0"
+#define VERSTR "FBDraw 1.0"
 
 int main(int argc, char** argv) {
     if (argc != 3 || !*argv[1] || !*argv[2]) {
-        puts("FBDRAW " VERSTR);
+        puts(VERSTR);
         fprintf(stderr, "%s FRAMEBUFFER COMMANDS\n", argv[0]);
         return 1;
     }
@@ -337,7 +337,7 @@ int main(int argc, char** argv) {
                 if (!cmdnamelen || (cmdnamelen == 6 && !strncmp(cmd, "ersion", 6))) {
                     SKIPTOARGS();
                     ENDARGS();
-                    puts("FBDRAW " VERSTR);
+                    puts(VERSTR);
                     goto nextcmd;
                 } else if (cmdnamelen == 6 && !strncmp(cmd, "erbose", 6)) {
                     SKIPTOARGS();
