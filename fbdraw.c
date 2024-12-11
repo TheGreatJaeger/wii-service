@@ -13,8 +13,11 @@
 #include <string.h>
 #include <ctype.h>
 
+#define VERSTR "1.0"
+
 int main(int argc, char** argv) {
-    if (argc != 3) {
+    if (argc != 3 || !*argv[1] || !*argv[2]) {
+        puts("FBDRAW " VERSTR);
         fprintf(stderr, "%s FRAMEBUFFER COMMANDS\n", argv[0]);
         return 1;
     }
@@ -285,6 +288,7 @@ int main(int argc, char** argv) {
                     if (verbose) printf("DREW LINE: %d, %d, %d, %d%s\n", x1, y1, x2, y2, (usefast) ? "" : " (bounds checked)");
                     goto nextcmd;
                 }
+                break;
             case 'p':
                 if (!cmdnamelen || (cmdnamelen == 4 && !strncmp(cmd, "ixel", 4))) {
                     SKIPTOARGS();
@@ -329,8 +333,13 @@ int main(int argc, char** argv) {
                     goto nextcmd;
                 }
                 break;
-            case 'V':
-                if (!cmdnamelen || (cmdnamelen == 6 && !strncmp(cmd, "erbose", 6))) {
+            case 'v':
+                if (!cmdnamelen || (cmdnamelen == 6 && !strncmp(cmd, "ersion", 6))) {
+                    SKIPTOARGS();
+                    ENDARGS();
+                    puts("FBDRAW " VERSTR);
+                    goto nextcmd;
+                } else if (cmdnamelen == 6 && !strncmp(cmd, "erbose", 6)) {
                     SKIPTOARGS();
                     ENDARGS();
                     verbose = !verbose;
