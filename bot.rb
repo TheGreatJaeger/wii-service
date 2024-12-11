@@ -10,7 +10,7 @@ bot.message(starting_with: 'wii$') do |event|
     event.respond('No command provided!')
   else
     command = parts[0]
-    arg = parts[1]
+    arg = (parts.length() == 2) ? parts[1] : ""
 
     if command == 'help'
       help = "`wii$help`- Run this help dialog\n"
