@@ -73,6 +73,9 @@ int main(int argc, char** argv) {
             if (*cmd == '-') {\
                 PARSEINT_n = true;\
                 ++cmd;\
+            } else if (*cmd == '+') {\
+                PARSEINT_n = false;\
+                ++cmd;\
             } else {\
                 PARSEINT_n = false;\
             }\
@@ -121,44 +124,6 @@ int main(int argc, char** argv) {
             }\
         } while (0)
         switch (*cmd++) {
-            case 'i':
-                if (!cmdnamelen || (cmdnamelen == 3 && !strncmp(cmd, "nfo", 3))) {
-                    SKIPTOARGS();
-                    ENDARGS();
-                    printf(
-                        "INFO:\n"
-                        "  ID: %s\n"
-                        "  Type: %u (%u)\n"
-                        "  Line length: %u\n"
-                        "  Capabilities: %04x\n"
-                        "  Visible resolution: %ux%u\n"
-                        "  Virtual resolution: %ux%u\n"
-                        "  Offset: %u, %u\n"
-                        "  BPP: %u\n"
-                        "  Grayscale: %s\n"
-                        "  Nonstandard: %s\n"
-                        "  Red: off=%u, len=%u, msb_right=%s\n"
-                        "  Green: off=%u, len=%u, msb_right=%s\n"
-                        "  Blue: off=%u, len=%u, msb_right=%s\n"
-                        "  Alpha: off=%u, len=%u, msb_right=%s\n",
-                        fixinfo.id,
-                        (unsigned)fixinfo.type, (unsigned)fixinfo.type_aux,
-                        (unsigned)fixinfo.line_length,
-                        (unsigned)fixinfo.capabilities,
-                        (unsigned)varinfo.xres, (unsigned)varinfo.yres,
-                        (unsigned)varinfo.xres_virtual, (unsigned)varinfo.yres_virtual,
-                        (unsigned)varinfo.xoffset, (unsigned)varinfo.yoffset,
-                        (unsigned)varinfo.bits_per_pixel,
-                        (varinfo.grayscale) ? "Yes" : "No",
-                        (varinfo.nonstd) ? "Yes" : "No",
-                        (unsigned)varinfo.red.offset, (unsigned)varinfo.red.length, (varinfo.red.msb_right) ? "true" : "false",
-                        (unsigned)varinfo.green.offset, (unsigned)varinfo.green.length, (varinfo.green.msb_right) ? "true" : "false",
-                        (unsigned)varinfo.blue.offset, (unsigned)varinfo.blue.length, (varinfo.blue.msb_right) ? "true" : "false",
-                        (unsigned)varinfo.transp.offset, (unsigned)varinfo.transp.length, (varinfo.transp.msb_right) ? "true" : "false"
-                    );
-                    goto nextcmd;
-                }
-                break;
             case 'c':
                 if (!cmdnamelen || (cmdnamelen == 4 && !strncmp(cmd, "olor", 4))) {
                     SKIPTOARGS();
@@ -207,6 +172,119 @@ int main(int argc, char** argv) {
                     goto nextcmd;
                 }
                 break;
+            case 'i':
+                if (!cmdnamelen || (cmdnamelen == 3 && !strncmp(cmd, "nfo", 3))) {
+                    SKIPTOARGS();
+                    ENDARGS();
+                    printf(
+                        "INFO:\n"
+                        "  ID: %s\n"
+                        "  Type: %u (%u)\n"
+                        "  Line length: %u\n"
+                        "  Capabilities: %04x\n"
+                        "  Visible resolution: %ux%u\n"
+                        "  Virtual resolution: %ux%u\n"
+                        "  Offset: %u, %u\n"
+                        "  BPP: %u\n"
+                        "  Grayscale: %s\n"
+                        "  Nonstandard: %s\n"
+                        "  Red: off=%u, len=%u, msb_right=%s\n"
+                        "  Green: off=%u, len=%u, msb_right=%s\n"
+                        "  Blue: off=%u, len=%u, msb_right=%s\n"
+                        "  Alpha: off=%u, len=%u, msb_right=%s\n",
+                        fixinfo.id,
+                        (unsigned)fixinfo.type, (unsigned)fixinfo.type_aux,
+                        (unsigned)fixinfo.line_length,
+                        (unsigned)fixinfo.capabilities,
+                        (unsigned)varinfo.xres, (unsigned)varinfo.yres,
+                        (unsigned)varinfo.xres_virtual, (unsigned)varinfo.yres_virtual,
+                        (unsigned)varinfo.xoffset, (unsigned)varinfo.yoffset,
+                        (unsigned)varinfo.bits_per_pixel,
+                        (varinfo.grayscale) ? "Yes" : "No",
+                        (varinfo.nonstd) ? "Yes" : "No",
+                        (unsigned)varinfo.red.offset, (unsigned)varinfo.red.length, (varinfo.red.msb_right) ? "true" : "false",
+                        (unsigned)varinfo.green.offset, (unsigned)varinfo.green.length, (varinfo.green.msb_right) ? "true" : "false",
+                        (unsigned)varinfo.blue.offset, (unsigned)varinfo.blue.length, (varinfo.blue.msb_right) ? "true" : "false",
+                        (unsigned)varinfo.transp.offset, (unsigned)varinfo.transp.length, (varinfo.transp.msb_right) ? "true" : "false"
+                    );
+                    goto nextcmd;
+                }
+                break;
+            case 'l':
+                if (!cmdnamelen || (cmdnamelen == 3 && !strncmp(cmd, "ine", 3))) {
+                    SKIPTOARGS();
+                    int x1, y1, x2, y2;
+                    PARSEINT(x1);
+                    NEXTARG();
+                    PARSEINT(y1);
+                    NEXTARG();
+                    PARSEINT(x2);
+                    NEXTARG();
+                    PARSEINT(y2);
+                    ENDARGS();
+                    bool usefast;
+                    if (x1 < 0 || x1 >= varinfo.xres) usefast = false;
+                    else if (y1 < 0 || y1 >= varinfo.yres) usefast = false;
+                    else if (x2 < 0 || x2 >= varinfo.xres) usefast = false;
+                    else if (y2 < 0 || y2 >= varinfo.yres) usefast = false;
+                    else usefast = true;
+                    if (x1 > x2) {int tmp = x1; x1 = x2; x2 = tmp; tmp = y1; y1 = y2; y2 = tmp;}
+                    if (usefast) {
+                        if (y1 == y2) {
+                            for (int x = x1; x <= x2; ++x) {
+                                PUTPIX_FAST(x, y1, color[0], color[1], color[2]);
+                            }
+                        } else if (x1 == x2) {
+                            for (int y = y1; y <= y2; ++y) {
+                                PUTPIX_FAST(x1, y, color[0], color[1], color[2]);
+                            }
+                        } else {
+                            int dx = x2 - x1;
+                            int dy = y2 - y1;
+                            int yi;
+                            if (dy >= 0) {
+                                yi = 1;
+                            } else {
+                                yi = -1;
+                                dy = -dy;
+                            }
+                            int d = dy * 2 - dx;
+                            int y = y1;
+                            for (int x = x1; x <= x2; ++x) {
+                                PUTPIX_FAST(x, y, color[0], color[1], color[2]);
+                                if (d > 0) {
+                                    y += yi;
+                                    d += (dy - dx) * 2;
+                                } else {
+                                    d += dy * 2;
+                                }
+                            }
+                        }
+                    } else {
+                        int dx = x2 - x1;
+                        int dy = y2 - y1;
+                        int yi;
+                        if (dy >= 0) {
+                            yi = 1;
+                        } else {
+                            yi = -1;
+                            dy = -dy;
+                        }
+                        int d = dy * 2 - dx;
+                        int y = y1;
+                        for (int x = x1; x <= x2; ++x) {
+                            PUTPIX(x, y, color[0], color[1], color[2]);
+                            if (d > 0) {
+                                y += yi;
+                                d += (dy - dx) * 2;
+                            } else {
+                                d += dy * 2;
+                            }
+                        }
+                    }
+                    if (verbose) printf("DREW LINE: %d, %d, %d, %d%s\n", x1, y1, x2, y2, (usefast) ? "" : " (bounds checked)");
+                    goto nextcmd;
+                }
             case 'p':
                 if (!cmdnamelen || (cmdnamelen == 4 && !strncmp(cmd, "ixel", 4))) {
                     SKIPTOARGS();
@@ -220,8 +298,8 @@ int main(int argc, char** argv) {
                     goto nextcmd;
                 }
                 break;
-            case 'q':
-                if (!cmdnamelen || (cmdnamelen == 3 && !strncmp(cmd, "uad", 3))) {
+            case 'r':
+                if (!cmdnamelen || (cmdnamelen == 3 && !strncmp(cmd, "ect", 3))) {
                     SKIPTOARGS();
                     int x1, y1, x2, y2;
                     PARSEINT(x1);
@@ -232,24 +310,22 @@ int main(int argc, char** argv) {
                     NEXTARG();
                     PARSEINT(y2);
                     ENDARGS();
-                    x2 += x1;
-                    y2 += y1;
                     if (x1 < 0) x1 = 0;
-                    else if (x1 >= varinfo.xres) x1 = varinfo.xres;
+                    else if (x1 >= varinfo.xres) x1 = varinfo.xres - 1;
                     if (y1 < 0) y1 = 0;
-                    else if (y1 >= varinfo.yres) y1 = varinfo.yres;
+                    else if (y1 >= varinfo.yres) y1 = varinfo.yres - 1;
                     if (x2 < 0) x2 = 0;
-                    else if (x2 >= varinfo.xres) x2 = varinfo.xres;
+                    else if (x2 >= varinfo.xres) x2 = varinfo.xres - 1;
                     if (y2 < 0) y2 = 0;
-                    else if (y2 >= varinfo.yres) y2 = varinfo.yres;
+                    else if (y2 >= varinfo.yres) y2 = varinfo.yres - 1;
                     if (x1 > x2) {int tmp = x1; x1 = x2; x2 = tmp;}
                     if (y1 > y2) {int tmp = y1; y1 = y2; y2 = tmp;}
-                    for (int y = y1; y < y2; ++y) {
-                        for (int x = x1; x < x2; ++x) {
-                            PUTPIX(x, y, color[0], color[1], color[2]);
+                    for (int y = y1; y <= y2; ++y) {
+                        for (int x = x1; x <= x2; ++x) {
+                            PUTPIX_FAST(x, y, color[0], color[1], color[2]);
                         }
                     }
-                    if (verbose) printf("DREW QUAD: %d, %d, %d, %d)\n", x1, y1, x2 - x1, y2 - y1);
+                    if (verbose) printf("DREW RECT: %d, %d, %d, %d\n", x1, y1, x2, y2);
                     goto nextcmd;
                 }
                 break;
